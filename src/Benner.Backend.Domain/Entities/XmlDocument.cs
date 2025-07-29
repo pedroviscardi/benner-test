@@ -35,20 +35,23 @@ public class XmlDocument : BaseEntity
 
     public void AddElement(XmlElement element)
     {
-        ArgumentNullException.ThrowIfNull(element);
-
         Elements.Add(element);
         SetUpdatedAt();
     }
 
     public void RemoveElement(Guid elementId)
     {
-        var element = Elements.Find(e => e.Id == elementId);
-        if (element != null)
+        var element = Elements.Find(e =>
         {
-            Elements.Remove(element);
-            SetUpdatedAt();
-        }
+            var idAttribute = e.GetAttribute("Id");
+            return Guid.TryParse(idAttribute, out var id) && id == elementId;
+        });
+
+        if (element == null)
+            return;
+
+        Elements.Remove(element);
+        SetUpdatedAt();
     }
 
     public void UpdateContent(string newContent)

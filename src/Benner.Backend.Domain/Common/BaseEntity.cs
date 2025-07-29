@@ -1,4 +1,6 @@
-﻿namespace Benner.Backend.Domain.Common;
+﻿using System.Xml.Serialization;
+
+namespace Benner.Backend.Domain.Common;
 
 public abstract class BaseEntity
 {
@@ -14,10 +16,17 @@ public abstract class BaseEntity
         Id = id;
     }
 
-    public Guid Id { get; protected set; }
-    public DateTime CreatedAt { get; protected set; }
-    public DateTime? UpdatedAt { get; protected set; }
-    public bool IsActive { get; protected set; }
+    [XmlElement("Id")]
+    public Guid Id { get; set; }
+
+    [XmlElement("CreatedAt")]
+    public DateTime CreatedAt { get; set; }
+
+    [XmlElement("UpdatedAt")]
+    public DateTime? UpdatedAt { get; set; }
+
+    [XmlElement("IsActive")]
+    public bool IsActive { get; set; }
 
     public void SetUpdatedAt()
     {

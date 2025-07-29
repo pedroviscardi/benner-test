@@ -27,9 +27,7 @@ public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, Resu
             customer.UpdatePersonalInfo(command.Name, command.Email, command.Phone, command.BirthDate);
             customer.UpdateAddress(command.Address);
 
-            // Salvar alterações
             var updateResult = await _customerRepository.UpdateAsync(customer);
-
             if (!updateResult.IsSuccess)
                 return Result<Domain.Entities.Customer>.Failure(updateResult.Error);
 

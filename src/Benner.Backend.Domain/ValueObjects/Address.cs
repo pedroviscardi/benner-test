@@ -5,7 +5,6 @@ namespace Benner.Backend.Domain.ValueObjects;
 
 public class Address : ValueObject
 {
-    // Construtor para XML Serialization
     private Address()
     {
     }
