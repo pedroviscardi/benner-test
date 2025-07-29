@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BF7FA967-917C-445C-A0AE-CA7B05B46477}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{55B5D4D3-E593-4804-945B-C3D1A71AC4F5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Teste Técnico – Desenvolvedor C#.pdf = Teste Técnico – Desenvolvedor C#.pdf
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.WPF.App", "src\Benner.Backend.WPF.App\Benner.Backend.WPF.App.csproj", "{E0EF02DD-F97C-4295-96F3-660CFA2374A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.Domain", "src\Benner.Backend.Domain\Benner.Backend.Domain.csproj", "{7E72DEA4-871B-4ECF-A20E-20A1AD22467A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.Application", "src\Benner.Backend.Application\Benner.Backend.Application.csproj", "{0F7B6000-C38B-426A-9DEC-A58F27D1D051}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.Infrastructure", "src\Benner.Backend.Infrastructure\Benner.Backend.Infrastructure.csproj", "{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.Shared", "src\Benner.Backend.Shared\Benner.Backend.Shared.csproj", "{6510BA52-EABA-4F45-B5D9-650527940929}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E0EF02DD-F97C-4295-96F3-660CFA2374A3} = {E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}
+		{7E72DEA4-871B-4ECF-A20E-20A1AD22467A} = {E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}
+		{0F7B6000-C38B-426A-9DEC-A58F27D1D051} = {E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}
+		{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB} = {E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}
+		{6510BA52-EABA-4F45-B5D9-650527940929} = {E0CBDBF3-EC01-4B23-BA83-A65DD1BC94DA}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0EF02DD-F97C-4295-96F3-660CFA2374A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0EF02DD-F97C-4295-96F3-660CFA2374A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0EF02DD-F97C-4295-96F3-660CFA2374A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0EF02DD-F97C-4295-96F3-660CFA2374A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E72DEA4-871B-4ECF-A20E-20A1AD22467A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E72DEA4-871B-4ECF-A20E-20A1AD22467A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E72DEA4-871B-4ECF-A20E-20A1AD22467A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E72DEA4-871B-4ECF-A20E-20A1AD22467A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F7B6000-C38B-426A-9DEC-A58F27D1D051}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F7B6000-C38B-426A-9DEC-A58F27D1D051}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F7B6000-C38B-426A-9DEC-A58F27D1D051}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F7B6000-C38B-426A-9DEC-A58F27D1D051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02D9EC16-3BF3-44A9-A8FF-AC17D09F78AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6510BA52-EABA-4F45-B5D9-650527940929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6510BA52-EABA-4F45-B5D9-650527940929}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6510BA52-EABA-4F45-B5D9-650527940929}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6510BA52-EABA-4F45-B5D9-650527940929}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
