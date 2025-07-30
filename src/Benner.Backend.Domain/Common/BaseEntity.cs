@@ -1,47 +1,49 @@
-﻿using System.Xml.Serialization;
+﻿using System;
+using System.Xml.Serialization;
 
-namespace Benner.Backend.Domain.Common;
-
-public abstract class BaseEntity
+namespace Benner.Backend.Domain.Common
 {
-    protected BaseEntity()
+    public abstract class BaseEntity
     {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        IsActive = true;
-    }
+        protected BaseEntity()
+        {
+            Id = Guid.NewGuid();
+            CreatedAt = DateTime.UtcNow;
+            IsActive = true;
+        }
 
-    protected BaseEntity(Guid id) : this()
-    {
-        Id = id;
-    }
+        protected BaseEntity(Guid id) : this()
+        {
+            Id = id;
+        }
 
-    [XmlElement("Id")]
-    public Guid Id { get; set; }
+        [XmlElement("Id")]
+        public Guid Id { get; set; }
 
-    [XmlElement("CreatedAt")]
-    public DateTime CreatedAt { get; set; }
+        [XmlElement("CreatedAt")]
+        public DateTime CreatedAt { get; set; }
 
-    [XmlElement("UpdatedAt")]
-    public DateTime? UpdatedAt { get; set; }
+        [XmlElement("UpdatedAt")]
+        public DateTime? UpdatedAt { get; set; }
 
-    [XmlElement("IsActive")]
-    public bool IsActive { get; set; }
+        [XmlElement("IsActive")]
+        public bool IsActive { get; set; }
 
-    public void SetUpdatedAt()
-    {
-        UpdatedAt = DateTime.UtcNow;
-    }
+        public void SetUpdatedAt()
+        {
+            UpdatedAt = DateTime.UtcNow;
+        }
 
-    public void Activate()
-    {
-        IsActive = true;
-        SetUpdatedAt();
-    }
+        public void Activate()
+        {
+            IsActive = true;
+            SetUpdatedAt();
+        }
 
-    public void Deactivate()
-    {
-        IsActive = false;
-        SetUpdatedAt();
+        public void Deactivate()
+        {
+            IsActive = false;
+            SetUpdatedAt();
+        }
     }
 }

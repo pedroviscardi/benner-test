@@ -50,7 +50,7 @@ namespace Benner.Backend.WPF.App.Commands
             }
         }
 
-        private void RaiseCanExecuteChanged()
+        public void RaiseCanExecuteChanged()
         {
             CommandManager.InvalidateRequerySuggested();
         }

@@ -1,32 +1,36 @@
-﻿namespace Benner.Backend.Domain.Common;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public abstract class ValueObject
+namespace Benner.Backend.Domain.Common
 {
-    protected abstract IEnumerable<object> GetEqualityComponents();
-
-    public override bool Equals(object? obj)
+    public abstract class ValueObject
     {
-        if (obj == null || obj.GetType() != GetType())
-            return false;
+        protected abstract IEnumerable<object> GetEqualityComponents();
 
-        var other = (ValueObject) obj;
-        return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
-    }
+        public override bool Equals(object obj)
+        {
+            if (obj == null || obj.GetType() != GetType())
+                return false;
 
-    public override int GetHashCode()
-    {
-        return GetEqualityComponents()
-            .Select(x => x?.GetHashCode() ?? 0)
-            .Aggregate((x, y) => x ^ y);
-    }
+            var other = (ValueObject) obj;
+            return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
+        }
 
-    public static bool operator ==(ValueObject left, ValueObject right)
-    {
-        return Equals(left, right);
-    }
+        public override int GetHashCode()
+        {
+            return GetEqualityComponents()
+                .Select(x => x?.GetHashCode() ?? 0)
+                .Aggregate((x, y) => x ^ y);
+        }
 
-    public static bool operator !=(ValueObject left, ValueObject right)
-    {
-        return !Equals(left, right);
+        public static bool operator ==(ValueObject left, ValueObject right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ValueObject left, ValueObject right)
+        {
+            return !Equals(left, right);
+        }
     }
 }

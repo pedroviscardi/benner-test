@@ -14,6 +14,9 @@
         <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
         <WarningLevel>4</WarningLevel>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+        <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+        <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +38,7 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="mscorlib"/>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
@@ -45,14 +49,42 @@
         <Reference Include="WindowsBase"/>
         <Reference Include="PresentationCore"/>
         <Reference Include="PresentationFramework"/>
+        <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     </ItemGroup>
     <ItemGroup>
         <ApplicationDefinition Include="App.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
         </ApplicationDefinition>
-        <Compile Include="ViewModels\BaseViewModel.cs" />
-        <Compile Include="ViewModels\CustomerViewModel.cs" />
+        <Compile Include="Converters\BoolToStringConverter.cs"/>
+        <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+        <Compile Include="Converters\StringToVisibilityConverter.cs"/>
+        <Compile Include="Services\ServiceLocator.cs"/>
+        <Compile Include="Services\ViewModelFactory.cs"/>
+        <Compile Include="ViewModels\BaseViewModel.cs"/>
+        <Compile Include="ViewModels\CreateOrderViewModel.cs" />
+        <Compile Include="ViewModels\CustomerViewModel.cs"/>
+        <Compile Include="ViewModels\MainViewModel.cs"/>
+        <Compile Include="ViewModels\OrderItemViewModel.cs" />
+        <Compile Include="ViewModels\OrderViewModel.cs"/>
+        <Compile Include="ViewModels\ProductViewModel.cs"/>
+        <Compile Include="Views\CreateOrderView.xaml.cs">
+          <DependentUpon>CreateOrderView.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\CustomerView.xaml.cs">
+            <DependentUpon>CustomerView.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\OrderView.xaml.cs">
+            <DependentUpon>OrderView.xaml</DependentUpon>
+        </Compile>
+        <Compile Include="Views\ProductView.xaml.cs">
+            <DependentUpon>ProductView.xaml</DependentUpon>
+        </Compile>
         <Page Include="MainWindow.xaml">
             <Generator>MSBuild:Compile</Generator>
             <SubType>Designer</SubType>
@@ -61,14 +93,18 @@
             <DependentUpon>App.xaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
-        <Compile Include="Commands\AsyncRelayCommand.cs" />
-        <Compile Include="Commands\AsyncRelayCommand[T].cs" />
-        <Compile Include="Commands\RelayCommand.cs" />
-        <Compile Include="Commands\RelayCommand[T].cs" />
+        <Compile Include="Commands\AsyncRelayCommand.cs"/>
+        <Compile Include="Commands\AsyncRelayCommand[T].cs"/>
+        <Compile Include="Commands\RelayCommand.cs"/>
+        <Compile Include="Commands\RelayCommand[T].cs"/>
         <Compile Include="MainWindow.xaml.cs">
             <DependentUpon>MainWindow.xaml</DependentUpon>
             <SubType>Code</SubType>
         </Compile>
+        <Page Include="Views\CreateOrderView.xaml" />
+        <Page Include="Views\CustomerView.xaml"/>
+        <Page Include="Views\OrderView.xaml"/>
+        <Page Include="Views\ProductView.xaml"/>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs">
@@ -86,20 +122,25 @@
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config"/>
+        <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Benner.Backend.Application\Benner.Backend.Application.csproj">
-        <Project>{0f7b6000-c38b-426a-9dec-a58f27d1d051}</Project>
-        <Name>Benner.Backend.Application</Name>
-      </ProjectReference>
-      <ProjectReference Include="..\Benner.Backend.Domain\Benner.Backend.Domain.csproj">
-        <Project>{7e72dea4-871b-4ecf-a20e-20a1ad22467a}</Project>
-        <Name>Benner.Backend.Domain</Name>
-      </ProjectReference>
-      <ProjectReference Include="..\Benner.Backend.Shared\Benner.Backend.Shared.csproj">
-        <Project>{6510ba52-eaba-4f45-b5d9-650527940929}</Project>
-        <Name>Benner.Backend.Shared</Name>
-      </ProjectReference>
+        <ProjectReference Include="..\Benner.Backend.Application\Benner.Backend.Application.csproj">
+            <Project>{0f7b6000-c38b-426a-9dec-a58f27d1d051}</Project>
+            <Name>Benner.Backend.Application</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Benner.Backend.Domain\Benner.Backend.Domain.csproj">
+            <Project>{7e72dea4-871b-4ecf-a20e-20a1ad22467a}</Project>
+            <Name>Benner.Backend.Domain</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Benner.Backend.Infrastructure\Benner.Backend.Infrastructure.csproj">
+            <Project>{02d9ec16-3bf3-44a9-a8ff-ac17d09f78ab}</Project>
+            <Name>Benner.Backend.Infrastructure</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\Benner.Backend.Shared\Benner.Backend.Shared.csproj">
+            <Project>{6510ba52-eaba-4f45-b5d9-650527940929}</Project>
+            <Name>Benner.Backend.Shared</Name>
+        </ProjectReference>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>

@@ -1,14 +1,16 @@
-﻿using Benner.Backend.Shared.Commands;
+﻿using System;
+using Benner.Backend.Shared.Commands;
 using Benner.Backend.Shared.Common;
 
-namespace Benner.Backend.Application.UseCases.Customer.Commands;
-
-public class DeleteCustomerCommand : ICommand<Result<bool>>
+namespace Benner.Backend.Application.UseCases.Customer.Commands
 {
-    public DeleteCustomerCommand(Guid id)
+    public class DeleteCustomerCommand : ICommand<Result<bool>>
     {
-        Id = id;
-    }
+        public DeleteCustomerCommand(Guid id)
+        {
+            Id = id;
+        }
 
-    public Guid Id { get; }
+        public Guid Id { get; }
+    }
 }

@@ -1,0 +1,211 @@
+﻿<UserControl x:Class="Benner.Backend.WPF.App.Views.CustomerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Benner.Backend.WPF.App.Converters">
+    
+    <UserControl.Resources>
+        <!-- Estilos -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Opacity="0.2" BlurRadius="5"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,5"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="👥 Gestão de Clientes" FontSize="28" FontWeight="Bold" 
+                      Foreground="#333" VerticalAlignment="Center"/>
+            <Button Content="🔄 Atualizar" Style="{StaticResource ModernButton}"
+                   Command="{Binding LoadCustomersCommand}" Margin="20,0,0,0"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Lista de Clientes -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Título da Lista -->
+                    <TextBlock Grid.Row="0" Text="Lista de Clientes" 
+                              FontSize="18" FontWeight="Bold" 
+                              Margin="20,20,20,10"/>
+
+                    <!-- Busca -->
+                    <TextBox Grid.Row="1" 
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            Style="{StaticResource TextBoxStyle}"
+                            Margin="20,0,20,10"
+                            Tag="🔍 Buscar clientes..."/>
+
+                    <!-- DataGrid -->
+                    <DataGrid Grid.Row="2" 
+                             ItemsSource="{Binding FilteredCustomers}"
+                             SelectedItem="{Binding SelectedCustomer}"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             Margin="20,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*"/>
+                            <DataGridTextColumn Header="Telefone" Binding="{Binding Phone}" Width="120"/>
+                            <DataGridTextColumn Header="Documento" Binding="{Binding Document}" Width="120"/>
+                            <DataGridTextColumn Header="Data Nasc." Binding="{Binding BirthDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Ações da Lista -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" 
+                               HorizontalAlignment="Right" Margin="20">
+                        <Button Content="✏️ Editar" Style="{StaticResource ModernButton}"
+                               Command="{Binding EditCustomerCommand}" Background="#FF9800"/>
+                        <Button Content="🗑️ Excluir" Style="{StaticResource ModernButton}"
+                               Command="{Binding DeleteCustomerCommand}" Background="#F44336"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Formulário -->
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                <ScrollViewer>
+                    <StackPanel Margin="20">
+                        <TextBlock Text="{Binding IsEditing, Converter={x:Static local:BoolToStringConverter.Instance}, ConverterParameter='Editar Cliente|Novo Cliente'}" 
+                                  FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                        <!-- Campos do Formulário -->
+                        <TextBlock Text="Nome *" FontWeight="Bold"/>
+                        <TextBox Text="{Binding CurrentCustomer.Name, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <TextBlock Text="Email *" FontWeight="Bold" Margin="0,10,0,0"/>
+                        <TextBox Text="{Binding CurrentCustomer.Email, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <TextBlock Text="Telefone *" FontWeight="Bold" Margin="0,10,0,0"/>
+                        <TextBox Text="{Binding CurrentCustomer.Phone, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <TextBlock Text="Documento *" FontWeight="Bold" Margin="0,10,0,0"/>
+                        <TextBox Text="{Binding CurrentCustomer.Document, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <TextBlock Text="Data de Nascimento" FontWeight="Bold" Margin="0,10,0,0"/>
+                        <DatePicker SelectedDate="{Binding CurrentCustomer.BirthDate}"
+                                   Margin="0,5"/>
+
+                        <!-- Endereço -->
+                        <TextBlock Text="ENDEREÇO" FontWeight="Bold" Margin="0,20,0,10" 
+                                  Foreground="#666" FontSize="12"/>
+
+                        <TextBlock Text="CEP" FontWeight="Bold"/>
+                        <TextBox Text="{Binding CurrentCustomer.Address.ZipCode, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <TextBlock Text="Rua" FontWeight="Bold" Margin="0,10,0,0"/>
+                        <TextBox Text="{Binding CurrentCustomer.Address.Street, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBoxStyle}"/>
+
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                <TextBlock Text="Cidade" FontWeight="Bold"/>
+                                <TextBox Text="{Binding CurrentCustomer.Address.City, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource TextBoxStyle}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                <TextBlock Text="UF" FontWeight="Bold"/>
+                                <TextBox Text="{Binding CurrentCustomer.Address.State, UpdateSourceTrigger=PropertyChanged}"
+                                        Style="{StaticResource TextBoxStyle}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Botões do Formulário -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
+                            <Button Content="❌ Cancelar" Style="{StaticResource ModernButton}"
+                                   Command="{Binding CancelCommand}" Background="#9E9E9E"/>
+                            <Button Content="💾 Salvar" Style="{StaticResource ModernButton}"
+                                   Command="{Binding SaveCustomerCommand}" Background="#4CAF50"/>
+                        </StackPanel>
+
+                        <Button Content="➕ Novo Cliente" Style="{StaticResource ModernButton}"
+                               Command="{Binding NewCustomerCommand}" 
+                               Background="#2196F3" Margin="0,10,0,0"
+                               HorizontalAlignment="Stretch"/>
+
+                        <!-- Loading -->
+                        <ProgressBar IsIndeterminate="{Binding IsLoading}" 
+                                    Height="4" Margin="0,20,0,0"/>
+
+                        <!-- Mensagens -->
+                        <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" 
+                                  Margin="0,10,0,0" FontWeight="Bold"
+                                  Visibility="{Binding SuccessMessage, Converter={x:Static local:StringToVisibilityConverter.Instance}}"/>
+                        
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" 
+                                  Margin="0,10,0,0" FontWeight="Bold"
+                                  Visibility="{Binding ErrorMessage, Converter={x:Static local:StringToVisibilityConverter.Instance}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

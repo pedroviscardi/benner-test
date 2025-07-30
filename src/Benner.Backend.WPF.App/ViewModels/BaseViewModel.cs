@@ -12,12 +12,12 @@ namespace Benner.Backend.WPF.App.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        protected virtual bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
         {
-            if (Equals(field, value))
+            if (Equals(storage, value))
                 return false;
 
-            field = value;
+            storage = value;
             OnPropertyChanged(propertyName);
             return true;
         }

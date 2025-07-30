@@ -1,8 +1,11 @@
-﻿using Benner.Backend.Shared.Queries;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Benner.Backend.Shared.Queries;
 
-namespace Benner.Backend.Shared.Common;
-
-public interface IQueryBus
+namespace Benner.Backend.Shared.Common
 {
-    Task<TResult> ExecuteAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery<TResult>;
+    public interface IQueryBus
+    {
+        Task<TResult> ExecuteAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery<TResult>;
+    }
 }

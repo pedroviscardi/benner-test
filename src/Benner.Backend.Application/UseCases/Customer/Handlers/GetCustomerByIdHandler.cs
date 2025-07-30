@@ -1,29 +1,33 @@
-﻿using Benner.Backend.Application.UseCases.Customer.Queries;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Benner.Backend.Application.UseCases.Customer.Queries;
 using Benner.Backend.Domain.Repositories;
 using Benner.Backend.Shared.Common;
 using Benner.Backend.Shared.Queries;
 
-namespace Benner.Backend.Application.UseCases.Customer.Handlers;
-
-public class GetCustomerByIdHandler : IQueryHandler<GetCustomerByIdQuery, Result<Domain.Entities.Customer>>
+namespace Benner.Backend.Application.UseCases.Customer.Handlers
 {
-    private readonly ICustomerRepository _customerRepository;
-
-    public GetCustomerByIdHandler(ICustomerRepository customerRepository)
+    public class GetCustomerByIdHandler : IQueryHandler<GetCustomerByIdQuery, Result<Domain.Entities.Customer>>
     {
-        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
-    }
+        private readonly ICustomerRepository _customerRepository;
 
-    public async Task<Result<Domain.Entities.Customer>> HandleAsync(GetCustomerByIdQuery query, CancellationToken cancellationToken = default)
-    {
-        try
+        public GetCustomerByIdHandler(ICustomerRepository customerRepository)
         {
-            var result = await _customerRepository.GetByIdAsync(query.Id);
-            return result;
+            _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
         }
-        catch (Exception ex)
+
+        public async Task<Result<Domain.Entities.Customer>> HandleAsync(GetCustomerByIdQuery query, CancellationToken cancellationToken = default)
         {
-            return Result<Domain.Entities.Customer>.Failure($"Erro ao buscar cliente: {ex.Message}");
+            try
+            {
+                var result = await _customerRepository.GetByIdAsync(query.Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return Result<Domain.Entities.Customer>.Failure($"Erro ao buscar cliente: {ex.Message}");
+            }
         }
     }
 }

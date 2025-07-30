@@ -29,5 +29,10 @@ namespace Benner.Backend.WPF.App.Commands
         {
             _execute();
         }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
+        }
     }
 }

@@ -1,146 +1,101 @@
-﻿using System.Xml.Serialization;
+﻿using System;
 using Benner.Backend.Domain.Common;
-using Benner.Backend.Domain.Enumerators;
 
-namespace Benner.Backend.Domain.Entities;
-
-[XmlRoot("Product")]
-public class Product : BaseEntity
+namespace Benner.Backend.Domain.Entities
 {
-    public Product()
+    public class Product : BaseEntity
     {
-    }
+        public Product()
+        {
+        }
 
-    public Product(string name,
-        string description,
-        string code,
-        decimal price,
-        int stockQuantity,
-        int minimumStock,
-        string category,
-        string brand)
-    {
-        ValidateProductData(name, description, code, price, stockQuantity, minimumStock, category);
+        public Product(string name, string description, string code, decimal price, int stockQuantity, int minimumStock, string category, string brand)
+        {
+            ValidateProductData(name, description, code, price, stockQuantity, minimumStock, category, brand);
 
-        Name = name;
-        Description = description;
-        Code = code;
-        Price = price;
-        StockQuantity = stockQuantity;
-        MinimumStock = minimumStock;
-        Category = category;
-        Brand = brand;
-        Status = ProductStatus.Active;
-    }
+            Name = name;
+            Description = description;
+            Code = code;
+            Price = price;
+            StockQuantity = stockQuantity;
+            MinimumStock = minimumStock;
+            Category = category;
+            Brand = brand;
+        }
 
-    [XmlElement("Name")]
-    public string Name { get; private set; }
+        private Product(bool skipValidation)
+        {
+            if (!skipValidation)
+                throw new InvalidOperationException("Use o construtor público ou CreateEmpty()");
 
-    [XmlElement("Description")]
-    public string Description { get; private set; }
+            Name = string.Empty;
+            Description = string.Empty;
+            Code = string.Empty;
+            Price = 0;
+            StockQuantity = 0;
+            MinimumStock = 0;
+            Category = string.Empty;
+            Brand = string.Empty;
+        }
 
-    [XmlElement("Code")]
-    public string Code { get; private set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Code { get; set; }
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public int MinimumStock { get; set; }
+        public string Category { get; set; }
+        public string Brand { get; set; }
 
-    [XmlElement("Price")]
-    public decimal Price { get; private set; }
+        public static Product CreateEmpty()
+        {
+            return new Product(true);
+        }
 
-    [XmlElement("StockQuantity")]
-    public int StockQuantity { get; private set; }
+        public void UpdateInfo(string name, string description, decimal price, string category, string brand)
+        {
+            Name = name;
+            Description = description;
+            Price = price;
+            Category = category;
+            Brand = brand;
+        }
 
-    [XmlElement("MinimumStock")]
-    public int MinimumStock { get; private set; }
+        public void UpdateStock(int newQuantity)
+        {
+            StockQuantity = newQuantity;
+        }
 
-    [XmlElement("Category")]
-    public string Category { get; private set; }
+        public bool IsStockBelowMinimum()
+        {
+            return StockQuantity < MinimumStock;
+        }
 
-    [XmlElement("Brand")]
-    public string Brand { get; private set; }
+        private void ValidateProductData(string name, string description, string code, decimal price, int stockQuantity, int minimumStock, string category, string brand)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Nome é obrigatório", nameof(name));
 
-    [XmlElement("Status")]
-    public ProductStatus Status { get; private set; }
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException("Descrição é obrigatória", nameof(description));
 
-    public void UpdateInfo(string name, string description, decimal price, string category, string brand)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome é obrigatório", nameof(name));
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Código é obrigatório", nameof(code));
 
-        if (price <= 0)
-            throw new ArgumentException("Preço deve ser maior que zero", nameof(price));
+            if (price < 0)
+                throw new ArgumentException("Preço deve ser maior ou igual a zero", nameof(price));
 
-        Name = name;
-        Description = description;
-        Price = price;
-        Category = category;
-        Brand = brand;
-        SetUpdatedAt();
-    }
+            if (stockQuantity < 0)
+                throw new ArgumentException("Quantidade em estoque deve ser maior ou igual a zero", nameof(stockQuantity));
 
-    public void UpdateStock(int newQuantity)
-    {
-        if (newQuantity < 0)
-            throw new ArgumentException("Estoque não pode ser negativo", nameof(newQuantity));
+            if (minimumStock < 0)
+                throw new ArgumentException("Estoque mínimo deve ser maior ou igual a zero", nameof(minimumStock));
 
-        StockQuantity = newQuantity;
-        SetUpdatedAt();
-    }
+            if (string.IsNullOrWhiteSpace(category))
+                throw new ArgumentException("Categoria é obrigatória", nameof(category));
 
-    public void AddStock(int quantity)
-    {
-        if (quantity <= 0)
-            throw new ArgumentException("Quantidade deve ser maior que zero", nameof(quantity));
-
-        StockQuantity += quantity;
-        SetUpdatedAt();
-    }
-
-    public void RemoveStock(int quantity)
-    {
-        if (quantity <= 0)
-            throw new ArgumentException("Quantidade deve ser maior que zero", nameof(quantity));
-
-        if (StockQuantity < quantity)
-            throw new InvalidOperationException("Estoque insuficiente");
-
-        StockQuantity -= quantity;
-        SetUpdatedAt();
-    }
-
-    public bool IsStockBelowMinimum()
-    {
-        return StockQuantity <= MinimumStock;
-    }
-
-    public void ChangeStatus(ProductStatus newStatus)
-    {
-        Status = newStatus;
-        SetUpdatedAt();
-    }
-
-    private void ValidateProductData(string name,
-        string description,
-        string code,
-        decimal price,
-        int stockQuantity,
-        int minimumStock,
-        string category)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome é obrigatório", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(code))
-            throw new ArgumentException("Código é obrigatório", nameof(code));
-
-        if (price <= 0)
-            throw new ArgumentException("Preço deve ser maior que zero", nameof(price));
-
-        if (stockQuantity < 0)
-            throw new ArgumentException("Estoque atual não pode ser negativo", nameof(stockQuantity));
-
-        if (minimumStock < 0)
-            throw new ArgumentException("Estoque mínimo não pode ser negativo", nameof(minimumStock));
-
-        if (string.IsNullOrWhiteSpace(category))
-            throw new ArgumentException("Categoria é obrigatória", nameof(category));
+            if (string.IsNullOrWhiteSpace(brand))
+                throw new ArgumentException("Marca é obrigatória", nameof(brand));
+        }
     }
 }

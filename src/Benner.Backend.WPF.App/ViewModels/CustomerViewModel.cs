@@ -1,52 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Benner.Backend.Application.UseCases.Customer.Commands;
 using Benner.Backend.Application.UseCases.Customer.Queries;
 using Benner.Backend.Domain.Entities;
-using Benner.Backend.Domain.ValueObjects;
+using Benner.Backend.Shared.Commands;
 using Benner.Backend.Shared.Common;
+using Benner.Backend.Shared.Queries;
 using Benner.Backend.WPF.App.Commands;
+using ICommand = System.Windows.Input.ICommand;
 
 namespace Benner.Backend.WPF.App.ViewModels
 {
     public class CustomerViewModel : BaseViewModel
     {
-        private readonly ICommandBus _commandBus;
-        private readonly IQueryBus _queryBus;
-        private DateTime _birthDate = DateTime.Today.AddYears(-18);
-        private string _city;
-        private string _document;
-        private string _email;
+        private readonly ICommandHandler<CreateCustomerCommand, Result<Customer>> _createCustomerHandler;
+        private readonly ICommandHandler<DeleteCustomerCommand, Result<bool>> _deleteCustomerHandler;
+        private readonly IQueryHandler<GetAllCustomersQuery, Result<IEnumerable<Customer>>> _getAllCustomersHandler;
+        private readonly ICommandHandler<UpdateCustomerCommand, Result<Customer>> _updateCustomerHandler;
+        private Customer _currentCustomer;
+
+        private ObservableCollection<Customer> _customers;
+        private string _errorMessage;
+        private ObservableCollection<Customer> _filteredCustomers;
+        private bool _isEditing;
         private bool _isLoading;
-        private string _name;
-        private string _neighborhood;
-        private string _number;
-        private string _phone;
-        private string _postalCode;
-
+        private string _searchText;
         private Customer _selectedCustomer;
-        private string _state;
-        private string _statusMessage;
-        private string _street;
+        private string _successMessage;
 
-        public CustomerViewModel(ICommandBus commandBus, IQueryBus queryBus)
+        public CustomerViewModel(
+            IQueryHandler<GetAllCustomersQuery, Result<IEnumerable<Customer>>> getAllCustomersHandler,
+            ICommandHandler<CreateCustomerCommand, Result<Customer>> createCustomerHandler,
+            ICommandHandler<UpdateCustomerCommand, Result<Customer>> updateCustomerHandler,
+            ICommandHandler<DeleteCustomerCommand, Result<bool>> deleteCustomerHandler)
         {
-            _commandBus = commandBus ?? throw new ArgumentNullException(nameof(commandBus));
-            _queryBus = queryBus ?? throw new ArgumentNullException(nameof(queryBus));
+            _getAllCustomersHandler = getAllCustomersHandler;
+            _createCustomerHandler = createCustomerHandler;
+            _updateCustomerHandler = updateCustomerHandler;
+            _deleteCustomerHandler = deleteCustomerHandler;
 
             Customers = new ObservableCollection<Customer>();
+            FilteredCustomers = new ObservableCollection<Customer>();
+
             LoadCustomersCommand = new AsyncRelayCommand(LoadCustomersAsync);
             SaveCustomerCommand = new AsyncRelayCommand(SaveCustomerAsync, CanSaveCustomer);
             DeleteCustomerCommand = new AsyncRelayCommand(DeleteCustomerAsync, CanDeleteCustomer);
             NewCustomerCommand = new RelayCommand(NewCustomer);
+            EditCustomerCommand = new RelayCommand(EditCustomer, CanEditCustomer);
+            CancelCommand = new RelayCommand(Cancel);
+            SearchCommand = new RelayCommand(PerformSearch);
 
-            _ = Task.Run(LoadCustomersAsync);
+            CurrentCustomer = Customer.CreateEmpty();
+
+            _ = LoadCustomersAsync();
         }
 
-        public ObservableCollection<Customer> Customers { get; }
+        #region Properties
+
+        public ObservableCollection<Customer> Customers
+        {
+            get => _customers;
+            set => SetProperty(ref _customers, value);
+        }
+
+        public ObservableCollection<Customer> FilteredCustomers
+        {
+            get => _filteredCustomers;
+            set => SetProperty(ref _filteredCustomers, value);
+        }
 
         public Customer SelectedCustomer
         {
@@ -55,81 +79,42 @@ namespace Benner.Backend.WPF.App.ViewModels
             {
                 if (SetProperty(ref _selectedCustomer, value))
                 {
-                    LoadCustomerDetails();
+                    if (EditCustomerCommand is RelayCommand editCommand)
+                        editCommand.RaiseCanExecuteChanged();
+                    if (DeleteCustomerCommand is AsyncRelayCommand deleteCommand)
+                        deleteCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
-        public string Name
+        public Customer CurrentCustomer
         {
-            get => _name;
-            set => SetProperty(ref _name, value);
+            get => _currentCustomer;
+            set
+            {
+                if (SetProperty(ref _currentCustomer, value))
+                {
+                    if (SaveCustomerCommand is AsyncRelayCommand saveCommand)
+                    {
+                        saveCommand.RaiseCanExecuteChanged();
+                    }
+                }
+            }
         }
 
-        public string Email
+        public bool IsEditing
         {
-            get => _email;
-            set => SetProperty(ref _email, value);
-        }
-
-        public string Phone
-        {
-            get => _phone;
-            set => SetProperty(ref _phone, value);
-        }
-
-        public string Document
-        {
-            get => _document;
-            set => SetProperty(ref _document, value);
-        }
-
-        public DateTime BirthDate
-        {
-            get => _birthDate;
-            set => SetProperty(ref _birthDate, value);
-        }
-
-        public string Street
-        {
-            get => _street;
-            set => SetProperty(ref _street, value);
-        }
-
-        public string Number
-        {
-            get => _number;
-            set => SetProperty(ref _number, value);
-        }
-
-        public string Neighborhood
-        {
-            get => _neighborhood;
-            set => SetProperty(ref _neighborhood, value);
-        }
-
-        public string City
-        {
-            get => _city;
-            set => SetProperty(ref _city, value);
-        }
-
-        public string State
-        {
-            get => _state;
-            set => SetProperty(ref _state, value);
-        }
-
-        public string PostalCode
-        {
-            get => _postalCode;
-            set => SetProperty(ref _postalCode, value);
-        }
-
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
+            get => _isEditing;
+            set
+            {
+                if (SetProperty(ref _isEditing, value))
+                {
+                    if (EditCustomerCommand is RelayCommand editCommand)
+                        editCommand.RaiseCanExecuteChanged();
+                    if (DeleteCustomerCommand is AsyncRelayCommand deleteCommand)
+                        deleteCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public bool IsLoading
@@ -138,22 +123,55 @@ namespace Benner.Backend.WPF.App.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetProperty(ref _errorMessage, value);
+        }
+
+        public string SuccessMessage
+        {
+            get => _successMessage;
+            set => SetProperty(ref _successMessage, value);
+        }
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    PerformSearch();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Commands
+
         public ICommand LoadCustomersCommand { get; }
         public ICommand SaveCustomerCommand { get; }
         public ICommand DeleteCustomerCommand { get; }
         public ICommand NewCustomerCommand { get; }
+        public ICommand EditCustomerCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand SearchCommand { get; }
+
+        #endregion
+
+        #region Command Methods
 
         private async Task LoadCustomersAsync()
         {
             try
             {
                 IsLoading = true;
-                StatusMessage = "Carregando clientes...";
+                ClearMessages();
 
-                var query = new GetAllCustomersQuery();
-                var result = await _queryBus.ExecuteAsync<GetAllCustomersQuery, Result<IEnumerable<Customer>>>(query);
-
-                if (result.IsSuccess)
+                var result = await _getAllCustomersHandler.HandleAsync(new GetAllCustomersQuery());
+                if (result.IsSuccess && result.Data != null)
                 {
                     Customers.Clear();
                     foreach (var customer in result.Data)
@@ -161,16 +179,16 @@ namespace Benner.Backend.WPF.App.ViewModels
                         Customers.Add(customer);
                     }
 
-                    StatusMessage = $"{Customers.Count} clientes carregados";
+                    PerformSearch();
                 }
                 else
                 {
-                    StatusMessage = $"Erro: {result.Error}";
+                    ErrorMessage = result.Error ?? "Erro ao carregar clientes";
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao carregar clientes: {ex.Message}";
+                ErrorMessage = $"Erro ao carregar clientes: {ex.Message}";
             }
             finally
             {
@@ -183,54 +201,49 @@ namespace Benner.Backend.WPF.App.ViewModels
             try
             {
                 IsLoading = true;
-                StatusMessage = "Salvando cliente...";
+                ClearMessages();
 
-                var address = new Address(Street, Number, Neighborhood, City, State, PostalCode);
+                Result<Customer> result;
 
-                if (SelectedCustomer == null)
+                if (IsEditing)
                 {
-                    // Criar novo cliente
-                    var createCommand = new CreateCustomerCommand(Name, Email, Phone, Document, BirthDate, address);
-                    var result = await _commandBus.ExecuteAsync<CreateCustomerCommand, Result<Customer>>(createCommand);
+                    var command = new UpdateCustomerCommand(
+                        CurrentCustomer.Id,
+                        CurrentCustomer.Name,
+                        CurrentCustomer.Email,
+                        CurrentCustomer.Phone,
+                        CurrentCustomer.BirthDate,
+                        CurrentCustomer.Address);
 
-                    if (result.IsSuccess)
-                    {
-                        Customers.Add(result.Data);
-                        SelectedCustomer = result.Data;
-                        StatusMessage = "Cliente criado com sucesso!";
-                    }
-                    else
-                    {
-                        StatusMessage = $"Erro: {result.Error}";
-                    }
+                    result = await _updateCustomerHandler.HandleAsync(command);
                 }
                 else
                 {
-                    // Atualizar cliente existente
-                    var updateCommand = new UpdateCustomerCommand(SelectedCustomer.Id, Name, Email, Phone, BirthDate, address);
-                    var result = await _commandBus.ExecuteAsync<UpdateCustomerCommand, Result<Customer>>(updateCommand);
+                    var command = new CreateCustomerCommand(
+                        CurrentCustomer.Name,
+                        CurrentCustomer.Email,
+                        CurrentCustomer.Phone,
+                        CurrentCustomer.Document,
+                        CurrentCustomer.BirthDate,
+                        CurrentCustomer.Address);
 
-                    if (result.IsSuccess)
-                    {
-                        // Atualizar na lista
-                        var index = Customers.IndexOf(SelectedCustomer);
-                        if (index >= 0)
-                        {
-                            Customers[index] = result.Data;
-                            SelectedCustomer = result.Data;
-                        }
+                    result = await _createCustomerHandler.HandleAsync(command);
+                }
 
-                        StatusMessage = "Cliente atualizado com sucesso!";
-                    }
-                    else
-                    {
-                        StatusMessage = $"Erro: {result.Error}";
-                    }
+                if (result.IsSuccess)
+                {
+                    SuccessMessage = IsEditing ? "Cliente atualizado com sucesso!" : "Cliente criado com sucesso!";
+                    await LoadCustomersAsync();
+                    Cancel();
+                }
+                else
+                {
+                    ErrorMessage = result.Error;
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao salvar cliente: {ex.Message}";
+                ErrorMessage = $"Erro ao salvar cliente: {ex.Message}";
             }
             finally
             {
@@ -245,25 +258,25 @@ namespace Benner.Backend.WPF.App.ViewModels
             try
             {
                 IsLoading = true;
-                StatusMessage = "Excluindo cliente...";
+                ClearMessages();
 
-                var deleteCommand = new DeleteCustomerCommand(SelectedCustomer.Id);
-                var result = await _commandBus.ExecuteAsync<DeleteCustomerCommand, Result<bool>>(deleteCommand);
+                var command = new DeleteCustomerCommand(SelectedCustomer.Id);
+                var result = await _deleteCustomerHandler.HandleAsync(command);
 
-                if (result.IsSuccess && result.Data)
+                if (result.IsSuccess)
                 {
-                    Customers.Remove(SelectedCustomer);
-                    NewCustomer();
-                    StatusMessage = "Cliente excluído com sucesso!";
+                    SuccessMessage = "Cliente excluído com sucesso!";
+                    await LoadCustomersAsync();
+                    SelectedCustomer = null;
                 }
                 else
                 {
-                    StatusMessage = $"Erro: {result.Error}";
+                    ErrorMessage = result.Error;
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Erro ao excluir cliente: {ex.Message}";
+                ErrorMessage = $"Erro ao excluir cliente: {ex.Message}";
             }
             finally
             {
@@ -273,54 +286,93 @@ namespace Benner.Backend.WPF.App.ViewModels
 
         private void NewCustomer()
         {
-            SelectedCustomer = null;
-            Name = string.Empty;
-            Email = string.Empty;
-            Phone = string.Empty;
-            Document = string.Empty;
-            BirthDate = DateTime.Today.AddYears(-18);
-            Street = string.Empty;
-            Number = string.Empty;
-            Neighborhood = string.Empty;
-            City = string.Empty;
-            State = string.Empty;
-            PostalCode = string.Empty;
-            StatusMessage = "Novo cliente";
+            CurrentCustomer = Customer.CreateEmpty();
+            IsEditing = false;
+            ClearMessages();
         }
 
-        private void LoadCustomerDetails()
+        private void EditCustomer()
         {
             if (SelectedCustomer == null) return;
 
-            Name = SelectedCustomer.Name;
-            Email = SelectedCustomer.Email;
-            Phone = SelectedCustomer.Phone;
-            Document = SelectedCustomer.Document;
-            BirthDate = SelectedCustomer.BirthDate;
+            CurrentCustomer = new Customer(
+                SelectedCustomer.Name,
+                SelectedCustomer.Email,
+                SelectedCustomer.Phone,
+                SelectedCustomer.Document,
+                SelectedCustomer.BirthDate,
+                SelectedCustomer.Address);
 
-            if (SelectedCustomer.Address != null)
+            typeof(Customer).GetProperty("Id")?.SetValue(CurrentCustomer, SelectedCustomer.Id);
+
+            IsEditing = true;
+            ClearMessages();
+        }
+
+        private void Cancel()
+        {
+            CurrentCustomer = Customer.CreateEmpty();
+            IsEditing = false;
+            ClearMessages();
+        }
+
+        private void PerformSearch()
+        {
+            FilteredCustomers.Clear();
+
+            if (string.IsNullOrWhiteSpace(SearchText))
             {
-                Street = SelectedCustomer.Address.Street;
-                Number = SelectedCustomer.Address.Number;
-                Neighborhood = SelectedCustomer.Address.Neighborhood;
-                City = SelectedCustomer.Address.City;
-                State = SelectedCustomer.Address.State;
-                PostalCode = SelectedCustomer.Address.PostalCode;
+                foreach (var customer in Customers)
+                {
+                    FilteredCustomers.Add(customer);
+                }
+            }
+            else
+            {
+                var searchLower = SearchText.ToLower();
+                var filtered = Customers.Where(c =>
+                    c.Name.ToLower().Contains(searchLower) ||
+                    c.Email.ToLower().Contains(searchLower) ||
+                    c.Phone.Contains(SearchText) ||
+                    c.Document.Contains(SearchText));
+
+                foreach (var customer in filtered)
+                {
+                    FilteredCustomers.Add(customer);
+                }
             }
         }
 
+        #endregion
+
+        #region Helper Methods
+
         private bool CanSaveCustomer()
         {
-            return !IsLoading &&
-                   !string.IsNullOrWhiteSpace(Name) &&
-                   !string.IsNullOrWhiteSpace(Email) &&
-                   !string.IsNullOrWhiteSpace(Phone) &&
-                   !string.IsNullOrWhiteSpace(Document);
+            return CurrentCustomer != null &&
+                   !string.IsNullOrWhiteSpace(CurrentCustomer.Name) &&
+                   !string.IsNullOrWhiteSpace(CurrentCustomer.Email) &&
+                   !string.IsNullOrWhiteSpace(CurrentCustomer.Phone) &&
+                   !string.IsNullOrWhiteSpace(CurrentCustomer.Document) &&
+                   !IsLoading;
         }
 
         private bool CanDeleteCustomer()
         {
-            return !IsLoading && SelectedCustomer != null;
+            return SelectedCustomer != null && !IsEditing && !IsLoading;
         }
+
+        private bool CanEditCustomer()
+        {
+            return SelectedCustomer != null && !IsEditing && !IsLoading;
+        }
+
+        private void ClearMessages()
+        {
+            ErrorMessage = null;
+            SuccessMessage = null;
+        }
+
+        #endregion
     }
 }

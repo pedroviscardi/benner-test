@@ -1,0 +1,171 @@
+﻿
+<UserControl x:Class="Benner.Backend.WPF.App.Views.OrderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Benner.Backend.WPF.App.Converters">
+    
+    <UserControl.Resources>
+        <!-- Estilos (mesmos das outras views) -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Opacity="0.2" BlurRadius="5"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="🛒 Gestão de Pedidos" FontSize="28" FontWeight="Bold" 
+                      Foreground="#333" VerticalAlignment="Center"/>
+            <Button Content="🔄 Atualizar" Style="{StaticResource ModernButton}"
+                   Command="{Binding LoadOrdersCommand}" Margin="20,0,0,0"/>
+        </StackPanel>
+
+        <!-- Filtros -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="10,0,10,10">
+            <StackPanel Orientation="Horizontal" Margin="20,15">
+                <TextBlock Text="Filtros:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        Width="200" Padding="8" BorderBrush="#DDD" BorderThickness="1"
+                        Tag="🔍 Buscar pedidos..." Margin="0,0,10,0"/>
+
+                <ComboBox ItemsSource="{Binding AvailableStatuses}"
+                         SelectedItem="{Binding StatusFilter}"
+                         Width="150" Padding="8" Margin="0,0,10,0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Content="🔍 Filtrar" Style="{StaticResource ModernButton}"
+                       Command="{Binding SearchCommand}" Background="#4CAF50"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Lista de Pedidos -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Título da Lista -->
+                <TextBlock Grid.Row="0" Text="Lista de Pedidos" 
+                          FontSize="18" FontWeight="Bold" 
+                          Margin="20,20,20,10"/>
+
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1" 
+                         ItemsSource="{Binding FilteredOrders}"
+                         SelectedItem="{Binding SelectedOrder}"
+                         AutoGenerateColumns="False"
+                         CanUserAddRows="False"
+                         CanUserDeleteRows="False"
+                         GridLinesVisibility="Horizontal"
+                         HeadersVisibility="Column"
+                         Margin="20,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
+                        <DataGridTextColumn Header="Cliente ID" Binding="{Binding CustomerId}" Width="100"/>
+                        <DataGridTextColumn Header="Data" Binding="{Binding CreatedAt, StringFormat=dd/MM/yyyy HH:mm}" Width="140"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                            <Setter Property="Background" Value="#FFF3E0"/>
+                                            <Setter Property="Foreground" Value="#F57C00"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Status}" Value="Confirmed">
+                                            <Setter Property="Background" Value="#E8F5E8"/>
+                                            <Setter Property="Foreground" Value="#2E7D32"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Status}" Value="Delivered">
+                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                            <Setter Property="Foreground" Value="#1976D2"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Status}" Value="Cancelled">
+                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                            <Setter Property="Foreground" Value="#D32F2F"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="100"/>
+                        <DataGridTextColumn Header="Itens" Binding="{Binding Items.Count}" Width="60"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Ações -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                           HorizontalAlignment="Right" Margin="20">
+                    <Button Content="✅ Confirmar" Style="{StaticResource ModernButton}"
+                           Command="{Binding ConfirmOrderCommand}" Background="#4CAF50"/>
+                    <Button Content="🚚 Entregar" Style="{StaticResource ModernButton}"
+                           Command="{Binding MarkAsDeliveredCommand}" Background="#2196F3"/>
+                    <Button Content="❌ Cancelar" Style="{StaticResource ModernButton}"
+                           Command="{Binding CancelOrderCommand}" Background="#F44336"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Loading e Mensagens -->
+        <Grid Grid.Row="2" VerticalAlignment="Bottom">
+            <StackPanel Margin="20">
+                <ProgressBar IsIndeterminate="{Binding IsLoading}" 
+                            Height="4" Margin="0,0,0,10"/>
+
+                <TextBlock Text="{Binding SuccessMessage}" Foreground="Green" 
+                          FontWeight="Bold" HorizontalAlignment="Center"
+                          Visibility="{Binding SuccessMessage, Converter={x:Static local:StringToVisibilityConverter.Instance}}"/>
+                
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" 
+                          FontWeight="Bold" HorizontalAlignment="Center"
+                          Visibility="{Binding ErrorMessage, Converter={x:Static local:StringToVisibilityConverter.Instance}}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

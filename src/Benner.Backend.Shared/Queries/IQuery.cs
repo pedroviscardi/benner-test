@@ -1,5 +1,6 @@
-﻿namespace Benner.Backend.Shared.Queries;
-
-public interface IQuery<out TResult>
+﻿namespace Benner.Backend.Shared.Queries
 {
+    public interface IQuery<out TResult>
+    {
+    }
 }

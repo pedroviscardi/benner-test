@@ -1,74 +1,53 @@
-﻿using System.Xml.Serialization;
+﻿using System;
 using Benner.Backend.Domain.Common;
 
-namespace Benner.Backend.Domain.Entities;
-
-[XmlRoot("OrderItem")]
-public class OrderItem : BaseEntity
+namespace Benner.Backend.Domain.Entities
 {
-    protected OrderItem()
+    public class OrderItem : BaseEntity
     {
-    }
+        public OrderItem()
+        {
+        }
 
-    public OrderItem(Guid orderId, Guid productId, string productName, int quantity, decimal unitPrice)
-    {
-        if (quantity <= 0)
-            throw new ArgumentException("Quantidade deve ser maior que zero", nameof(quantity));
+        public OrderItem(Guid productId, int quantity, decimal unitPrice)
+        {
+            ValidateOrderItemData(productId, quantity, unitPrice);
 
-        if (unitPrice <= 0)
-            throw new ArgumentException("Preço unitário deve ser maior que zero", nameof(unitPrice));
+            ProductId = productId;
+            Quantity = quantity;
+            UnitPrice = unitPrice;
+        }
 
-        if (string.IsNullOrWhiteSpace(productName))
-            throw new ArgumentException("Nome do produto é obrigatório", nameof(productName));
+        private OrderItem(bool skipValidation)
+        {
+            if (!skipValidation)
+                throw new InvalidOperationException("Use o construtor público ou CreateEmpty()");
 
-        OrderId = orderId;
-        ProductId = productId;
-        ProductName = productName;
-        Quantity = quantity;
-        UnitPrice = unitPrice;
-        CalculateTotalAmount();
-    }
+            ProductId = Guid.Empty;
+            Quantity = 0;
+            UnitPrice = 0;
+        }
 
-    [XmlElement("OrderId")]
-    public Guid OrderId { get; private set; }
+        public Guid ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal TotalPrice => Quantity * UnitPrice;
 
-    [XmlElement("ProductId")]
-    public Guid ProductId { get; private set; }
+        public static OrderItem CreateEmpty()
+        {
+            return new OrderItem(true);
+        }
 
-    [XmlElement("ProductName")]
-    public string ProductName { get; private set; }
+        private void ValidateOrderItemData(Guid productId, int quantity, decimal unitPrice)
+        {
+            if (productId == Guid.Empty)
+                throw new ArgumentException("Produto é obrigatório", nameof(productId));
 
-    [XmlElement("Quantity")]
-    public int Quantity { get; private set; }
+            if (quantity <= 0)
+                throw new ArgumentException("Quantidade deve ser maior que zero", nameof(quantity));
 
-    [XmlElement("UnitPrice")]
-    public decimal UnitPrice { get; private set; }
-
-    [XmlElement("TotalAmount")]
-    public decimal TotalAmount { get; private set; }
-
-    public void UpdateQuantity(int newQuantity)
-    {
-        if (newQuantity <= 0)
-            throw new ArgumentException("Quantidade deve ser maior que zero", nameof(newQuantity));
-
-        Quantity = newQuantity;
-        CalculateTotalAmount();
-        SetUpdatedAt();
-    }
-
-    public void UpdateUnitPrice(decimal newUnitPrice)
-    {
-        if (newUnitPrice <= 0)
-            throw new ArgumentException("Preço unitário deve ser maior que zero", nameof(newUnitPrice));
-
-        UnitPrice = newUnitPrice;
-        CalculateTotalAmount();
-        SetUpdatedAt();
-    }
-
-    private void CalculateTotalAmount()
-    {
-        TotalAmount = Quantity * UnitPrice;
+            if (unitPrice < 0)
+                throw new ArgumentException("Preço unitário deve ser maior ou igual a zero", nameof(unitPrice));
+        }
     }
 }

@@ -1,14 +1,16 @@
-﻿using Benner.Backend.Shared.Common;
+﻿using System;
+using Benner.Backend.Shared.Common;
 using Benner.Backend.Shared.Queries;
 
-namespace Benner.Backend.Application.UseCases.Customer.Queries;
-
-public class GetCustomerByIdQuery : IQuery<Result<Domain.Entities.Customer>>
+namespace Benner.Backend.Application.UseCases.Customer.Queries
 {
-    public GetCustomerByIdQuery(Guid id)
+    public class GetCustomerByIdQuery : IQuery<Result<Domain.Entities.Customer>>
     {
-        Id = id;
-    }
+        public GetCustomerByIdQuery(Guid id)
+        {
+            Id = id;
+        }
 
-    public Guid Id { get; }
+        public Guid Id { get; }
+    }
 }
