@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{55B5D4D3
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		Teste Técnico – Desenvolvedor C#.pdf = Teste Técnico – Desenvolvedor C#.pdf
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benner.Backend.WPF.App", "src\Benner.Backend.WPF.App\Benner.Backend.WPF.App.csproj", "{E0EF02DD-F97C-4295-96F3-660CFA2374A3}"
